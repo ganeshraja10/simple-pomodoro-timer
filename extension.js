@@ -13,17 +13,11 @@ function activate(context) {
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "simple-pomodo-timer" is now active!');
   // pomodo.startPomodoTimer(vscode);
-  const pomodo = new Pomodo.pomodo(context);
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with  registerCommand
-  // The commandId parameter must match the command field in package.json
-  let disposable = vscode.commands.registerCommand("extension.helloWorld", function () {
-    // The code you place here will be executed every time your command is executed
-    // Display a message box to the user
-    pomodo.startPomodoTimer();
-  });
+  const pomodo = new Pomodo.pomodo();
+  let startPomodoTimer = vscode.commands.registerCommand("extension.startPomodoTimer", () => pomodo.startPomodoTimer());
+  let pausePomodoTimer = vscode.commands.registerCommand("extension.pausePomodoTimer", () => pomodo.pausePomodoTimer());
 
-  context.subscriptions.push(disposable);
+  context.subscriptions.push(startPomodoTimer, pausePomodoTimer);
 }
 exports.activate = activate;
 

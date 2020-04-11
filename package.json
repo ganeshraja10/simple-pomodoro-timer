@@ -10,14 +10,18 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.helloWorld"
+    "onCommand:extension.startPomodoTimer"
   ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "extension.helloWorld",
+        "command": "extension.startPomodoTimer",
         "title": "Start Pomodoro Timer"
+      },
+      {
+        "command": "extension.pausePomodoTimer",
+        "title": "Pause Pomodoro Timer"
       }
     ]
   },

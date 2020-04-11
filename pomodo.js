@@ -1,51 +1,87 @@
 const vscode = require("vscode");
 
+const POMODO_TIMER = 1;
+const REST_TIMER = 2;
+
+const restCountDown = 1 * 60 * 1000;
+const pomodoCountDown = 1 * 60 * 1000;
+
 const pomodo = class Pomodoro {
-  constructor(context) {
+  constructor() {
     this.vsCodeStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment["Right"], 10);
-    this.context = context;
+    this.tick = 0;
+    this.currentTimerID = null;
+    this.currentAction = POMODO_TIMER;
   }
   startPomodoTimer() {
-    this.vsCodeStatusBar.text = "Pomodo Started";
-    this.vsCodeStatusBar.show();
+    if (this.tick <= 0) {
+      this.vsCodeStatusBar.text = "Pomodo Started";
+      this.vsCodeStatusBar.show();
+    }
+    5;
     this.startWorkTimer();
   }
   appendZero(num) {
     return num <= 9 ? "0" + num : num;
   }
 
-  timer(countDownTime, counterisDone = null, icon = null) {
+  timer(countDownTime, timerType = POMODO_TIMER, icon = null) {
     let countDownTimer = countDownTime;
     let that = this;
     let timerId = setInterval(() => {
       countDownTimer -= 1000;
+      this.tick = countDownTimer;
       let min = Math.floor(countDownTimer / (60 * 1000));
       let sec = Math.floor((countDownTimer - min * 60 * 1000) / 1000);
 
       if (countDownTimer <= 0) {
         clearInterval(timerId);
-        if (counterisDone) counterisDone();
+        switch (timerType) {
+          case POMODO_TIMER:
+            this.startRestTimer();
+            break;
+          case REST_TIMER:
+            this.vsCodeStatusBar.text = "Pomodo Done!!! Time to take rest";
+            this.resetPomodoTimer();
+        }
       } else {
         that.vsCodeStatusBar.text = icon + " " + this.appendZero(min) + " : " + this.appendZero(sec);
       }
     }, 1000);
+    this.currentTimerID = timerId;
   }
 
   startWorkTimer() {
-    const pomodoCountDown = 5 * 60 * 1000;
     const tomatodIcon = "🍅";
-    this.vsCodeStatusBar.text = "xxx 2";
-    this.timer(pomodoCountDown, this.startRestTimer, tomatodIcon);
-  }
-
-  pomodoDone() {
-    this.vsCodeStatusBar.text = "Pomodo Done!!!";
+    this.vsCodeStatusBar.command = "extension.pausePomodoTimer";
+    this.timer(this.tick ? this.tick : pomodoCountDown, POMODO_TIMER, tomatodIcon);
   }
 
   startRestTimer() {
-    const restCountDown = 1 * 60 * 100;
+    this.currentAction = REST_TIMER;
     const restIcon = "🌴";
-    this.timer(restCountDown, this.pomodoDone, restIcon);
+    this.timer(this.tick ? this.tick : restCountDown, REST_TIMER, restIcon);
+  }
+  pausePomodoTimer() {
+    if (this.currentTimerID) {
+      this.vsCodeStatusBar.text = "Pomodo Timer passed. Click to Resume";
+      clearInterval(this.currentTimerID);
+      switch (this.currentAction) {
+        case POMODO_TIMER:
+          this.vsCodeStatusBar.command = "extension.startPomodoTimer";
+          break;
+        case REST_TIMER:
+          // this.vsCodeStatusBar.command = "extension.startPomodoTimer";
+          break;
+      }
+    }
+  }
+
+  resetPomodoTimer() {
+    this.tick = 0;
+    this.currentTimerID = null;
+    this.currentAction = POMODO_TIMER;
   }
 };
+
 exports.pomodo = pomodo;
