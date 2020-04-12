@@ -3,6 +3,7 @@
   "displayName": "Simple Pomodo Timer",
   "description": "A Simple Pomodo timer for Vs Code",
   "version": "0.0.1",
+  "publisher": "ganeshraja",
   "engines": {
     "vscode": "^1.41.0"
   },

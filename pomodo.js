@@ -1,5 +1,6 @@
 const vscode = require("vscode");
-
+const fs = require("fs");
+const path = require("path");
 const POMODO_TIMER = 1;
 const REST_TIMER = 2;
 
@@ -7,20 +8,28 @@ const restCountDown = 1 * 60 * 1000;
 const pomodoCountDown = 1 * 60 * 1000;
 
 const pomodo = class Pomodoro {
-  constructor() {
+  constructor(context) {
     this.vsCodeStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment["Right"], 10);
     this.tick = 0;
     this.currentTimerID = null;
     this.currentAction = POMODO_TIMER;
+    this.context = context;
+    this.fileName = context.globalStoragePath + path.sep + "pomodo.txt";
   }
   startPomodoTimer() {
     if (this.tick <= 0) {
       this.vsCodeStatusBar.text = "Pomodo Started";
       this.vsCodeStatusBar.show();
+      this.currentTime = new Date();
     }
-    5;
-    this.startWorkTimer();
+    if (this.currentAction == POMODO_TIMER) this.startWorkTimer();
+    else this.startRestTimer();
   }
+
+  storeDataToFile() {
+    fs.appendFile(this.fileName, this.currentTime + ",completed", (err) => console.log(err));
+  }
+
   appendZero(num) {
     return num <= 9 ? "0" + num : num;
   }
@@ -28,6 +37,7 @@ const pomodo = class Pomodoro {
   timer(countDownTime, timerType = POMODO_TIMER, icon = null) {
     let countDownTimer = countDownTime;
     let that = this;
+    this.vsCodeStatusBar.command = "extension.pausePomodoTimer";
     let timerId = setInterval(() => {
       countDownTimer -= 1000;
       this.tick = countDownTimer;
@@ -42,6 +52,7 @@ const pomodo = class Pomodoro {
             break;
           case REST_TIMER:
             this.vsCodeStatusBar.text = "Pomodo Done!!! Time to take rest";
+            this.storeDataToFile();
             this.resetPomodoTimer();
         }
       } else {
@@ -53,7 +64,6 @@ const pomodo = class Pomodoro {
 
   startWorkTimer() {
     const tomatodIcon = "🍅";
-    this.vsCodeStatusBar.command = "extension.pausePomodoTimer";
     this.timer(this.tick ? this.tick : pomodoCountDown, POMODO_TIMER, tomatodIcon);
   }
 
@@ -71,7 +81,7 @@ const pomodo = class Pomodoro {
           this.vsCodeStatusBar.command = "extension.startPomodoTimer";
           break;
         case REST_TIMER:
-          // this.vsCodeStatusBar.command = "extension.startPomodoTimer";
+          this.vsCodeStatusBar.command = "extension.startPomodoTimer";
           break;
       }
     }
